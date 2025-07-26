@@ -70,12 +70,13 @@ if (process.env.PUSHPLUS_TOKEN) {
     console.log('⚠️  推送Plus服务未配置');
 }
 
-// 初始化自动上传调度器
+// 初始化自动上传调度器（但不自动启动，避免与独立调度器冲突）
 if (imageHostService && pushPlusService) {
     const AutoUploadScheduler = require('../src/autoUploadScheduler');
     autoUploadScheduler = new AutoUploadScheduler(imageHostService, pushPlusService);
-    autoUploadScheduler.start(); // 默认启动正式模式
-    console.log('✅ 自动上传调度器已启动（正式模式）');
+    // 注释掉自动启动，避免与 start-scheduler.bat 中的调度器重复推送
+    // autoUploadScheduler.start(); // 默认启动正式模式
+    console.log('✅ 自动上传调度器已初始化（通过API控制启动）');
 }
 
 // 健康检查接口

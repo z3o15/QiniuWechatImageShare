@@ -1,60 +1,78 @@
 @echo off
 chcp 65001 >nul
 echo ========================================
-echo    GitHub图床自动上传服务
+echo    GitHub Image Host Service
 echo ========================================
 echo.
 
-:: 检查Node.js是否安装
+REM Check Node.js installation
 node --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo 错误: 未找到Node.js，请先安装Node.js
-    echo 下载地址: https://nodejs.org/
+    echo Error: Node.js not found, please install Node.js first
+    echo Download: https://nodejs.org/
     pause
     exit /b 1
 )
 
-:: 检查是否在正确的目录
+REM Check if in correct directory
 if not exist "package.json" (
-    echo 错误: 请在项目根目录运行此脚本
+    echo Error: Please run this script in project root directory
     pause
     exit /b 1
 )
 
-:: 检查.env文件是否存在
+REM Check if .env file exists
 if not exist ".env" (
-    echo 警告: 未找到.env配置文件
-    echo 请复制.env.example为.env并填入你的GitHub配置
+    echo Warning: .env config file not found
+    echo Please copy .env.example to .env and fill in your GitHub config
     echo.
     if exist ".env.example" (
-        echo 正在复制.env.example到.env...
+        echo Copying .env.example to .env...
         copy ".env.example" ".env" >nul
-        echo 请编辑.env文件并填入你的配置信息
+        echo Please edit .env file and fill in your config
         notepad .env
     )
     pause
     exit /b 1
 )
 
-:: 检查依赖是否安装
+REM Check if dependencies are installed
 if not exist "node_modules" (
-    echo 正在安装依赖...
+    echo Installing dependencies...
     npm install
     if %errorlevel% neq 0 (
-        echo 依赖安装失败
+        echo Dependency installation failed
         pause
         exit /b 1
     )
 )
 
-echo 启动自动上传调度器...
-echo 服务将在每天上午9:00自动执行
-echo 按Ctrl+C停止服务
+echo Starting GitHub Image Host Service...
+echo Starting frontend server and auto upload scheduler...
+echo Press Ctrl+C to stop all services
 echo.
 
-:: 启动调度器
+REM Start frontend server in background
+echo Starting frontend server...
+start "GitHub Image Host Frontend" /min cmd /c "npm start"
+
+REM Wait for frontend server to start
+echo Waiting for frontend server to start...
+timeout /t 3 /nobreak >nul
+
+REM Auto open browser
+echo Opening frontend page...
+start http://localhost:3005
+
+REM Start scheduler in foreground to keep window open
+echo Starting auto upload scheduler...
+echo Scheduler will run automatically at 9:00 AM daily
+echo Frontend page opened in browser: http://localhost:3005
+echo.
 npm run scheduler
 
 echo.
-echo 服务已停止
+echo Scheduler service stopped
+echo Note: Frontend server may still be running in background
+echo To stop completely, close all related command windows
 pause
